@@ -43,7 +43,7 @@ class LoginAdminView(APIView):
             return Response(_ERROR_CREDENCIALES, status=status.HTTP_401_UNAUTHORIZED)
 
         token = AccessToken()
-        token[api_settings.USER_ID_CLAIM] = usuario.id
+        token[api_settings.USER_ID_CLAIM] = str(usuario.id)
         token['correo'] = usuario.correo
         token['nombre'] = usuario.nombre
         token['rol'] = 'ADMIN'
