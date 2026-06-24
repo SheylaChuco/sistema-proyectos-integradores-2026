@@ -23,6 +23,7 @@ const DetallePropuestaAdmin = lazy(() => import('../features/admin/propuestas/pa
 const DashboardAdmin = lazy(() => import('../features/admin/dashboard/pages/DashboardAdmin'));
 const ListaSustentacionesAdmin = lazy(() => import('../features/admin/sustentaciones/pages/ListaSustentacionesAdmin'));
 const DetalleSustentacionAdmin = lazy(() => import('../features/admin/sustentaciones/pages/DetalleSustentacionAdmin'));
+const EstudiantesAdmin = lazy(() => import('../features/admin/estudiantes/pages/EstudiantesAdmin'));
 
 function Cargando() {
   return (
@@ -58,6 +59,7 @@ export default function AppRouter() {
           <Route path="/admin/dashboard" element={<DashboardAdmin />} />
           <Route path="/admin/sustentaciones" element={<ListaSustentacionesAdmin />} />
           <Route path="/admin/sustentaciones/:id" element={<DetalleSustentacionAdmin />} />
+          <Route path="/admin/estudiantes" element={<EstudiantesAdmin />} />
         </Route>
 
         {/* Redirecciones */}

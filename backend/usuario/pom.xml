@@ -74,6 +74,16 @@
             <artifactId>java-dotenv</artifactId>
             <version>${dotenv.version}</version>
         </dependency>
+        <!-- Spring Retry — reintentos con backoff exponencial para llamadas al LLM -->
+        <dependency>
+            <groupId>org.springframework.retry</groupId>
+            <artifactId>spring-retry</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>

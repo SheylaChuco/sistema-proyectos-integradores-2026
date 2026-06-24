@@ -22,8 +22,19 @@ public interface ProyectoRepository extends JpaRepository<Proyecto, Long>, JpaSp
            "WHERE p.id = :id")
     Optional<Proyecto> findByIdWithIntegrantes(@Param("id") Long id);
 
+    @Query("SELECT DISTINCT p FROM Proyecto p LEFT JOIN FETCH p.grupo")
+    List<Proyecto> findAllWithGrupo();
+
     @Query("SELECT DISTINCT p.ciclo FROM Proyecto p ORDER BY p.ciclo DESC")
     List<String> findDistinctCiclos();
 
-    Optional<Proyecto> findByGrupoIdAndOrigen(Long grupoId, Proyecto.Origen origen);
+    @Query("SELECT DISTINCT p FROM Proyecto p " +
+           "LEFT JOIN FETCH p.grupo g " +
+           "LEFT JOIN FETCH g.integrantes gi " +
+           "LEFT JOIN FETCH gi.estudiante e " +
+           "LEFT JOIN FETCH e.usuario " +
+           "WHERE g.id = :grupoId AND p.origen = :origen")
+    Optional<Proyecto> findByGrupoIdAndOrigenWithIntegrantes(
+            @Param("grupoId") Long grupoId,
+            @Param("origen") Proyecto.Origen origen);
 }

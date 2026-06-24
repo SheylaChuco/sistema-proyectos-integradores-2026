@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'apps.propuestas',
     'apps.estadisticas',
     'apps.importacion',
+    'apps.estudiantes',
 ]
 
 MIDDLEWARE = [

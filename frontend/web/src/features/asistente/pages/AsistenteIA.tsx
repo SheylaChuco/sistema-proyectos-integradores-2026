@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { enviarMensaje, type MensajeChat } from '../services/asistenteService';
 import type { ApiErrorResponse } from '../../../shared/types/api.types';
 
@@ -85,7 +86,23 @@ export default function AsistenteIA() {
                   : 'bg-[#F8FAFC] text-[#374151] border border-[#E2E8F0] rounded-tl-sm'
               }`}
             >
-              {msg.content}
+              {msg.role === 'assistant' ? (
+                <ReactMarkdown
+                  components={{
+                    p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                    ul: ({ children }) => <ul className="list-disc list-inside space-y-1 mb-2">{children}</ul>,
+                    ol: ({ children }) => <ol className="list-decimal list-inside space-y-1 mb-2">{children}</ol>,
+                    li: ({ children }) => <li className="leading-snug">{children}</li>,
+                    strong: ({ children }) => <strong className="font-semibold text-[#0F172A]">{children}</strong>,
+                    h3: ({ children }) => <p className="font-semibold text-[#0F172A] mt-2 mb-1">{children}</p>,
+                    h4: ({ children }) => <p className="font-medium text-[#374151] mt-1.5 mb-1">{children}</p>,
+                  }}
+                >
+                  {msg.content}
+                </ReactMarkdown>
+              ) : (
+                msg.content
+              )}
             </div>
           </div>
         ))}

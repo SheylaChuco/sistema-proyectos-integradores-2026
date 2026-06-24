@@ -4,12 +4,14 @@ import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.retry.annotation.EnableRetry;
 import pe.tecsup.proyectos.config.LlmProperties;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 @SpringBootApplication
+@EnableRetry
 @EnableConfigurationProperties(LlmProperties.class)
 public class ProyectosApplication {
 

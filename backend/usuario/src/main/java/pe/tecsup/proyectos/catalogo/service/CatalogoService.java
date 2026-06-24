@@ -56,7 +56,7 @@ public class CatalogoService {
 
     public ProyectoDetalleDto getMiProyecto(Long usuarioId) {
         Grupo grupo = resolverGrupoDelEstudiante(usuarioId);
-        Proyecto proyecto = proyectoRepository.findByGrupoIdAndOrigen(grupo.getId(), Proyecto.Origen.NUEVO)
+        Proyecto proyecto = proyectoRepository.findByGrupoIdAndOrigenWithIntegrantes(grupo.getId(), Proyecto.Origen.NUEVO)
                 .orElseThrow(() -> new ApiException(
                         "NO_ENCONTRADO", "Tu grupo aún no tiene un proyecto aprobado.", HttpStatus.NOT_FOUND));
         return ProyectoDetalleDto.from(proyecto);
