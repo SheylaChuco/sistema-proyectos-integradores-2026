@@ -1,19 +1,21 @@
 import { useEffect, useState } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import NavAdmin from '../../../../shared/components/NavAdmin';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { obtenerEstadisticas, type EstadisticasDto } from '../services/dashboardService';
 
-interface TarjetaEstadProps {
+const COLORES_ESTADO = ['#2563EB', '#22C55E', '#EF4444'];
+const ESTADOS_LABELS = ['En desarrollo', 'Aprobados', 'No aprobados'];
+
+interface TarjetaProps {
   titulo: string;
   valor: number;
-  color: string;
+  colorValor?: string;
 }
 
-function TarjetaEstad({ titulo, valor, color }: TarjetaEstadProps) {
+function Tarjeta({ titulo, valor, colorValor = 'text-[#0F172A]' }: TarjetaProps) {
   return (
-    <div className="bg-[#1E293B] rounded-xl border border-[#334155] p-5">
-      <p className="text-xs text-[#64748B] font-medium uppercase tracking-wider mb-2">{titulo}</p>
-      <p className={`text-3xl font-bold ${color}`}>{valor}</p>
+    <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-sm p-5">
+      <p className="text-xs font-semibold text-[#64748B] uppercase tracking-wide mb-2">{titulo}</p>
+      <p className={`text-3xl font-bold ${colorValor}`}>{valor}</p>
     </div>
   );
 }
@@ -23,75 +25,105 @@ export default function DashboardAdmin() {
   const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
-    async function cargar() {
-      try {
-        const data = await obtenerEstadisticas();
-        setStats(data);
-      } catch {
-        // estadísticas no disponibles
-      } finally {
-        setCargando(false);
-      }
-    }
-    cargar();
+    obtenerEstadisticas()
+      .then(setStats)
+      .catch(() => {})
+      .finally(() => setCargando(false));
   }, []);
 
+  const dataTorta = stats
+    ? [
+        { name: 'En desarrollo', value: stats.proyectos_en_desarrollo },
+        { name: 'Aprobados',     value: stats.proyectos_aprobados },
+        { name: 'No aprobados',  value: stats.proyectos_no_aprobados },
+      ].filter((d) => d.value > 0)
+    : [];
+
   return (
-    <div className="min-h-screen bg-[#0F172A]">
-      <NavAdmin />
-      <main className="max-w-7xl mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-white">Estadísticas</h1>
-          <p className="text-[#64748B] text-sm mt-1">Resumen del sistema de proyectos integradores</p>
-        </div>
+    <div className="p-8">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-[#0F172A]">Estadísticas</h1>
+        <p className="text-[#64748B] text-sm mt-1">Resumen general del sistema de proyectos integradores</p>
+      </div>
 
-        {cargando ? (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="bg-[#1E293B] rounded-xl border border-[#334155] p-5 animate-pulse">
-                <div className="h-3 bg-[#334155] rounded w-2/3 mb-3" />
-                <div className="h-8 bg-[#334155] rounded w-1/2" />
-              </div>
-            ))}
-          </div>
-        ) : stats ? (
-          <>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-              <TarjetaEstad titulo="Total proyectos" valor={stats.total_proyectos} color="text-white" />
-              <TarjetaEstad titulo="Históricos" valor={stats.proyectos_historicos} color="text-[#38BDF8]" />
-              <TarjetaEstad titulo="Nuevos" valor={stats.proyectos_nuevos} color="text-[#34D399]" />
-              <TarjetaEstad titulo="Pendientes" valor={stats.propuestas_pendientes} color="text-[#FB923C]" />
-              <TarjetaEstad titulo="Aprobados" valor={stats.propuestas_aprobadas} color="text-[#34D399]" />
-              <TarjetaEstad titulo="Observados" valor={stats.propuestas_observadas} color="text-[#FBBF24]" />
-              <TarjetaEstad titulo="En desarrollo" valor={stats.proyectos_en_desarrollo} color="text-[#A78BFA]" />
-              <TarjetaEstad titulo="Finalizados" valor={stats.proyectos_aprobados + stats.proyectos_no_aprobados} color="text-[#94A3B8]" />
+      {cargando ? (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="bg-white rounded-xl border border-[#E2E8F0] p-5 animate-pulse">
+              <div className="h-3 bg-[#E2E8F0] rounded w-2/3 mb-3" />
+              <div className="h-8 bg-[#E2E8F0] rounded w-1/2" />
             </div>
+          ))}
+        </div>
+      ) : !stats ? (
+        <div className="bg-white rounded-xl border border-[#E2E8F0] p-16 text-center text-[#94A3B8] text-sm">
+          No se pudieron cargar las estadísticas.
+        </div>
+      ) : (
+        <>
+          {/* Tarjetas */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <Tarjeta titulo="Total proyectos"   valor={stats.total_proyectos} />
+            <Tarjeta titulo="Históricos"        valor={stats.proyectos_historicos} colorValor="text-[#2563EB]" />
+            <Tarjeta titulo="Nuevos"            valor={stats.proyectos_nuevos}     colorValor="text-[#16A34A]" />
+            <Tarjeta titulo="Pendientes"        valor={stats.propuestas_pendientes} colorValor="text-amber-500" />
+            <Tarjeta titulo="Aprobadas"         valor={stats.propuestas_aprobadas} colorValor="text-[#16A34A]" />
+            <Tarjeta titulo="Observadas"        valor={stats.propuestas_observadas} colorValor="text-orange-500" />
+            <Tarjeta titulo="En desarrollo"     valor={stats.proyectos_en_desarrollo} colorValor="text-[#2563EB]" />
+            <Tarjeta titulo="Finalizados"       valor={stats.proyectos_aprobados + stats.proyectos_no_aprobados} colorValor="text-[#64748B]" />
+          </div>
 
+          {/* Gráficos */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Barras — proyectos por ciclo */}
             {stats.por_ciclo.length > 0 && (
-              <div className="bg-[#1E293B] rounded-xl border border-[#334155] p-6">
-                <h2 className="text-sm font-semibold text-white mb-6">Proyectos por ciclo</h2>
-                <ResponsiveContainer width="100%" height={280}>
+              <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-sm p-6">
+                <p className="text-sm font-semibold text-[#0F172A] mb-5">Proyectos por ciclo</p>
+                <ResponsiveContainer width="100%" height={240}>
                   <BarChart data={stats.por_ciclo} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                    <XAxis dataKey="ciclo" tick={{ fill: '#64748B', fontSize: 12 }} />
-                    <YAxis tick={{ fill: '#64748B', fontSize: 12 }} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+                    <XAxis dataKey="ciclo" tick={{ fill: '#64748B', fontSize: 11 }} />
+                    <YAxis tick={{ fill: '#64748B', fontSize: 11 }} />
                     <Tooltip
-                      contentStyle={{ background: '#0F172A', border: '1px solid #334155', borderRadius: 8 }}
-                      labelStyle={{ color: '#94A3B8' }}
-                      itemStyle={{ color: '#0057D8' }}
+                      contentStyle={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 8, fontSize: 12 }}
+                      labelStyle={{ color: '#0F172A', fontWeight: 600 }}
                     />
-                    <Bar dataKey="total" fill="#0057D8" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="total" fill="#2563EB" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             )}
-          </>
-        ) : (
-          <div className="text-center py-20 text-[#64748B]">
-            <p>No se pudieron cargar las estadísticas.</p>
+
+            {/* Torta — proyectos nuevos por estado */}
+            {dataTorta.length > 0 && (
+              <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-sm p-6">
+                <p className="text-sm font-semibold text-[#0F172A] mb-5">Proyectos nuevos por estado</p>
+                <ResponsiveContainer width="100%" height={240}>
+                  <PieChart>
+                    <Pie
+                      data={dataTorta}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={90}
+                      paddingAngle={3}
+                      dataKey="value"
+                    >
+                      {dataTorta.map((_, i) => (
+                        <Cell key={i} fill={COLORES_ESTADO[i % COLORES_ESTADO.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 8, fontSize: 12 }}
+                    />
+                    <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12, color: '#64748B' }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            )}
           </div>
-        )}
-      </main>
+        </>
+      )}
     </div>
   );
 }

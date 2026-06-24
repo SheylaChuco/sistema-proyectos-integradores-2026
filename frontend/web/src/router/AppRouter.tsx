@@ -21,6 +21,8 @@ const AsistenteIA = lazy(() => import('../features/asistente/pages/AsistenteIA')
 const GestionPropuestasAdmin = lazy(() => import('../features/admin/propuestas/pages/GestionPropuestasAdmin'));
 const DetallePropuestaAdmin = lazy(() => import('../features/admin/propuestas/pages/DetallePropuestaAdmin'));
 const DashboardAdmin = lazy(() => import('../features/admin/dashboard/pages/DashboardAdmin'));
+const ListaSustentacionesAdmin = lazy(() => import('../features/admin/sustentaciones/pages/ListaSustentacionesAdmin'));
+const DetalleSustentacionAdmin = lazy(() => import('../features/admin/sustentaciones/pages/DetalleSustentacionAdmin'));
 
 function Cargando() {
   return (
@@ -54,6 +56,8 @@ export default function AppRouter() {
           <Route path="/admin/propuestas" element={<GestionPropuestasAdmin />} />
           <Route path="/admin/propuestas/:id" element={<DetallePropuestaAdmin />} />
           <Route path="/admin/dashboard" element={<DashboardAdmin />} />
+          <Route path="/admin/sustentaciones" element={<ListaSustentacionesAdmin />} />
+          <Route path="/admin/sustentaciones/:id" element={<DetalleSustentacionAdmin />} />
         </Route>
 
         {/* Redirecciones */}
