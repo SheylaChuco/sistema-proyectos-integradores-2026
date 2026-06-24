@@ -1,0 +1,78 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #2563EB;
+  --color-primary-hover: #1D4ED8;
+  --color-navy: #0B2B5C;
+  --color-page: #EEF2F7;
+  --font-family-sans: 'Inter', -apple-system, sans-serif;
+}
+
+/* Estilos base: las utilidades de Tailwind tienen prioridad sobre @layer base */
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background-color: #EEF2F7;
+    -webkit-font-smoothing: antialiased;
+    color: #0F172A;
+  }
+
+  input, textarea, select, button {
+    font-family: inherit;
+  }
+
+  /* Fondo gris muy suave en inputs para que el borde sea visible sobre cards blancas */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="search"],
+  input[type="number"],
+  input[type="tel"],
+  textarea,
+  select {
+    background-color: #F8FAFC;
+    border: 1px solid #CBD5E1;
+    border-radius: 0.5rem;
+    color: #0F172A;
+  }
+
+  input[type="text"]::placeholder,
+  input[type="email"]::placeholder,
+  input[type="password"]::placeholder,
+  input[type="search"]::placeholder,
+  textarea::placeholder {
+    color: #94A3B8;
+  }
+
+  /* Eliminar el fondo azul de autocompletar del navegador */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px #F8FAFC inset !important;
+    -webkit-text-fill-color: #0F172A !important;
+    transition: background-color 5000s ease-in-out 0s;
+  }
+
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 99px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: scale(0.97); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.animate-fadeInUp { animation: fadeInUp 0.3s ease; }
+.animate-slideIn  { animation: slideIn 0.2s ease; }

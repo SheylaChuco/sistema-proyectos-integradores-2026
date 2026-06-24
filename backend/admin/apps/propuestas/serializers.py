@@ -14,33 +14,29 @@ class IntegranteResumenSerializer(serializers.Serializer):
         return obj.estudiante.codigo_estudiante
 
 
-class GrupoResumenSerializer(serializers.ModelSerializer):
-    integrantes = IntegranteResumenSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = Grupo
-        fields = ['id', 'codigo_grupo', 'periodo', 'integrantes']
-
-
 class PropuestaListaSerializer(serializers.ModelSerializer):
     grupo_codigo = serializers.CharField(source='grupo.codigo_grupo', read_only=True)
     grupo_periodo = serializers.CharField(source='grupo.periodo', read_only=True)
+    integrantes = IntegranteResumenSerializer(source='grupo.integrantes', many=True, read_only=True)
 
     class Meta:
         model = Propuesta
         fields = [
             'id', 'nombre', 'descripcion', 'estado',
             'comentario_observacion', 'fecha_envio',
-            'grupo_codigo', 'grupo_periodo',
+            'grupo_codigo', 'grupo_periodo', 'integrantes',
         ]
 
 
 class PropuestaDetalleSerializer(serializers.ModelSerializer):
-    grupo = GrupoResumenSerializer(read_only=True)
+    grupo_codigo = serializers.CharField(source='grupo.codigo_grupo', read_only=True)
+    grupo_periodo = serializers.CharField(source='grupo.periodo', read_only=True)
+    integrantes = IntegranteResumenSerializer(source='grupo.integrantes', many=True, read_only=True)
 
     class Meta:
         model = Propuesta
         fields = [
             'id', 'nombre', 'descripcion', 'estado',
-            'comentario_observacion', 'fecha_envio', 'grupo',
+            'comentario_observacion', 'fecha_envio',
+            'grupo_codigo', 'grupo_periodo', 'integrantes',
         ]

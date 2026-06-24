@@ -24,6 +24,14 @@ public class GrupoController {
 
     private final GrupoService grupoService;
 
+    @GetMapping("/api/grupos/mi-grupo")
+    public ResponseEntity<ApiResponse<GrupoResponse>> miGrupo(
+            @AuthenticationPrincipal String subject) {
+        Long usuarioId = Long.parseLong(subject);
+        GrupoResponse data = grupoService.getMiGrupo(usuarioId);
+        return ResponseEntity.ok(ApiResponse.success(data));
+    }
+
     @GetMapping("/api/estudiantes/buscar")
     public ResponseEntity<ApiResponse<List<BuscarEstudianteDto>>> buscar(
             @RequestParam @NotBlank @Size(min = 2, message = "El nombre debe tener al menos 2 caracteres.")

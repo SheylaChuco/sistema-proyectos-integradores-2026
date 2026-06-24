@@ -1,7 +1,6 @@
 package pe.tecsup.proyectos.grupo.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,12 +10,6 @@ import java.util.List;
 @Setter
 public class CrearGrupoRequest {
 
-    @NotBlank(message = "El código de grupo es obligatorio.")
-    private String codigoGrupo;
-
-    @NotBlank(message = "El periodo es obligatorio.")
-    private String periodo;
-
-    @NotNull(message = "La lista de compañeros es obligatoria.")
-    private List<Long> companeroIds;
+    @NotEmpty(message = "Debes agregar al menos un compañero.")
+    private List<Long> integranteIds;
 }

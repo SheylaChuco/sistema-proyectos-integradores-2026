@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import pe.tecsup.proyectos.shared.entity.Proyecto;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface ProyectoRepository extends JpaRepository<Proyecto, Long>, JpaSpecificationExecutor<Proyecto> {
@@ -18,4 +19,7 @@ public interface ProyectoRepository extends JpaRepository<Proyecto, Long>, JpaSp
            "LEFT JOIN FETCH e.usuario " +
            "WHERE p.id = :id")
     Optional<Proyecto> findByIdWithIntegrantes(@Param("id") Long id);
+
+    @Query("SELECT DISTINCT p.ciclo FROM Proyecto p ORDER BY p.ciclo DESC")
+    List<String> findDistinctCiclos();
 }

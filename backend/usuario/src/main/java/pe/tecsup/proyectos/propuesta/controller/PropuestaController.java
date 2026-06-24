@@ -38,8 +38,8 @@ public class PropuestaController {
         return ResponseEntity.ok(ApiResponse.success(data));
     }
 
-    @GetMapping("/mia")
-    public ResponseEntity<ApiResponse<PropuestaResponse>> mia(
+    @GetMapping("/mi-propuesta")
+    public ResponseEntity<ApiResponse<PropuestaResponse>> miPropuesta(
             @AuthenticationPrincipal String subject) {
         Long usuarioId = Long.parseLong(subject);
         PropuestaResponse data = propuestaService.getMiPropuesta(usuarioId);

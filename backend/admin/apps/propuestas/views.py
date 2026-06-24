@@ -12,18 +12,32 @@ _ERROR_NO_ENCONTRADO = {
     'error': {'code': 'NO_ENCONTRADO', 'message': 'Propuesta no encontrada.'},
 }
 
+_QS_DETALLE = lambda: Propuesta.objects.select_related('grupo').prefetch_related(
+    'grupo__integrantes__estudiante__usuario'
+)
+
 
 class ListaPropuestasView(APIView):
     permission_classes = [IsAuthenticated, EsAdmin]
 
     def get(self, request):
         estado = request.query_params.get('estado')
-        qs = Propuesta.objects.select_related('grupo').prefetch_related(
-            'grupo__integrantes__estudiante__usuario'
-        ).order_by('-id')
+        qs = _QS_DETALLE().order_by('-id')
         if estado:
             qs = qs.filter(estado=estado)
         serializer = PropuestaListaSerializer(qs, many=True)
+        return Response({'success': True, 'data': serializer.data})
+
+
+class DetallePropuestaView(APIView):
+    permission_classes = [IsAuthenticated, EsAdmin]
+
+    def get(self, request, pk):
+        try:
+            propuesta = _QS_DETALLE().get(pk=pk)
+        except Propuesta.DoesNotExist:
+            return Response(_ERROR_NO_ENCONTRADO, status=status.HTTP_404_NOT_FOUND)
+        serializer = PropuestaDetalleSerializer(propuesta)
         return Response({'success': True, 'data': serializer.data})
 
 

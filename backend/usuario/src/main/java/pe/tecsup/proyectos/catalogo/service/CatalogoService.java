@@ -21,18 +21,23 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CatalogoService {
 
-    private static final int TAMANIO_PAGINA = 20;
+    private static final int MAX_PAGINA = 50;
 
     private final ProyectoRepository proyectoRepository;
 
-    public PaginaDto<ProyectoListaDto> listarProyectos(String ciclo, String estado, String busqueda, int pagina) {
-        Specification<Proyecto> spec = construirSpec(ciclo, estado, busqueda);
-        Page<Proyecto> page = proyectoRepository.findAll(spec, PageRequest.of(pagina, TAMANIO_PAGINA));
-        List<ProyectoListaDto> content = page.getContent().stream()
+    public List<String> listarCiclos() {
+        return proyectoRepository.findDistinctCiclos();
+    }
+
+    public PaginaDto<ProyectoListaDto> listarProyectos(String ciclo, String origen, String busqueda, int page, int size) {
+        int tamanio = Math.min(Math.max(size, 1), MAX_PAGINA);
+        Specification<Proyecto> spec = construirSpec(ciclo, origen, busqueda);
+        Page<Proyecto> pageResult = proyectoRepository.findAll(spec, PageRequest.of(page, tamanio));
+        List<ProyectoListaDto> content = pageResult.getContent().stream()
                 .map(ProyectoListaDto::from)
                 .toList();
-        return new PaginaDto<>(content, page.getNumber(), page.getSize(),
-                page.getTotalElements(), page.getTotalPages());
+        return new PaginaDto<>(content, pageResult.getNumber(), pageResult.getSize(),
+                pageResult.getTotalElements(), pageResult.getTotalPages());
     }
 
     public ProyectoDetalleDto obtenerDetalle(Long id) {
@@ -42,7 +47,7 @@ public class CatalogoService {
         return ProyectoDetalleDto.from(proyecto);
     }
 
-    private Specification<Proyecto> construirSpec(String ciclo, String estado, String busqueda) {
+    private Specification<Proyecto> construirSpec(String ciclo, String origen, String busqueda) {
         return (root, query, cb) -> {
             List<Predicate> predicados = new ArrayList<>();
 
@@ -55,12 +60,10 @@ public class CatalogoService {
                         "%" + busqueda.toLowerCase() + "%"));
             }
 
-            if (estado != null && !estado.isBlank()) {
-                // El filtro por estado aplica solo a NUEVO; excluye HISTORICO automaticamente
-                predicados.add(cb.equal(root.get("origen"), Proyecto.Origen.NUEVO));
+            if (origen != null && !origen.isBlank()) {
                 try {
-                    Proyecto.Estado estadoEnum = Proyecto.Estado.valueOf(estado.toUpperCase());
-                    predicados.add(cb.equal(root.get("estado"), estadoEnum));
+                    Proyecto.Origen origenEnum = Proyecto.Origen.valueOf(origen.toUpperCase());
+                    predicados.add(cb.equal(root.get("origen"), origenEnum));
                 } catch (IllegalArgumentException e) {
                     predicados.add(cb.disjunction());
                 }
