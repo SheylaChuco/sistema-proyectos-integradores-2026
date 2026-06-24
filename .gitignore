@@ -1,5 +1,39 @@
 # Instrucciones de agentes Claude Code — solo local
 CLAUDE.md
 **/CLAUDE.md
+CLAUDE_*.md
+**/CLAUDE_*.md
 .env
 **/.env
+
+# Python
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+venv/
+**/venv/
+*.egg-info/
+.pytest_cache/
+**/.pytest_cache/
+
+# Java / Spring Boot
+target/
+*.class
+*.jar
+*.war
+**/.gradle/
+**/build/
+
+# Node / React
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+.vite/
+
+# IDEs
+.idea/
+.vscode/
+*.iml
