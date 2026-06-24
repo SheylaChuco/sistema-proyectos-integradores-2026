@@ -9,6 +9,8 @@ import pe.tecsup.proyectos.shared.entity.Proyecto;
 import java.util.List;
 import java.util.Optional;
 
+
+
 public interface ProyectoRepository extends JpaRepository<Proyecto, Long>, JpaSpecificationExecutor<Proyecto> {
 
     // Carga el proyecto con grupo + integrantes en una sola consulta para evitar N+1
@@ -22,4 +24,6 @@ public interface ProyectoRepository extends JpaRepository<Proyecto, Long>, JpaSp
 
     @Query("SELECT DISTINCT p.ciclo FROM Proyecto p ORDER BY p.ciclo DESC")
     List<String> findDistinctCiclos();
+
+    Optional<Proyecto> findByGrupoIdAndOrigen(Long grupoId, Proyecto.Origen origen);
 }

@@ -1,14 +1,16 @@
 package pe.tecsup.proyectos;
 
 import io.github.cdimascio.dotenv.Dotenv;
-import io.github.cdimascio.dotenv.DotenvEntry;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import pe.tecsup.proyectos.config.LlmProperties;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 @SpringBootApplication
+@EnableConfigurationProperties(LlmProperties.class)
 public class ProyectosApplication {
 
     public static void main(String[] args) {

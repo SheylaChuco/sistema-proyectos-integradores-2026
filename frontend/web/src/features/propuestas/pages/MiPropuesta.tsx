@@ -1,18 +1,29 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { obtenerMiPropuesta, crearPropuesta, editarPropuesta } from '../services/propuestaService';
+import {
+  obtenerMiPropuesta,
+  crearPropuesta,
+  editarPropuesta,
+  obtenerMiProyecto,
+  actualizarUrlProyecto,
+} from '../services/propuestaService';
 import type { PropuestaDto } from '../../../shared/types/propuesta.types';
+import type { ProyectoDetalle } from '../../../shared/types/proyecto.types';
 import type { ApiErrorResponse } from '../../../shared/types/api.types';
 
 type FormData = { nombre: string; descripcion: string };
 
 export default function MiPropuesta() {
   const [propuesta, setPropuesta] = useState<PropuestaDto | null>(null);
+  const [proyecto, setProyecto] = useState<ProyectoDetalle | null>(null);
   const [cargando, setCargando] = useState(true);
   const [sinGrupo, setSinGrupo] = useState(false);
   const [editando, setEditando] = useState(false);
   const [errorApi, setErrorApi] = useState('');
+  const [urlInput, setUrlInput] = useState('');
+  const [guardandoUrl, setGuardandoUrl] = useState(false);
+  const [urlGuardada, setUrlGuardada] = useState(false);
 
   const { register, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm<FormData>();
 
@@ -21,6 +32,11 @@ export default function MiPropuesta() {
     try {
       const data = await obtenerMiPropuesta();
       setPropuesta(data);
+      if (data?.estado === 'APROBADO') {
+        const proy = await obtenerMiProyecto();
+        setProyecto(proy);
+        setUrlInput(proy?.url ?? '');
+      }
     } catch (e) {
       const err = e as ApiErrorResponse;
       if (err?.error?.code === 'SIN_GRUPO') setSinGrupo(true);
@@ -39,6 +55,22 @@ export default function MiPropuesta() {
     } catch (e) {
       const err = e as ApiErrorResponse;
       setErrorApi(err.error?.message ?? 'Error al enviar la propuesta.');
+    }
+  }
+
+  async function onGuardarUrl() {
+    if (!proyecto) return;
+    setGuardandoUrl(true);
+    try {
+      const actualizado = await actualizarUrlProyecto(proyecto.id, urlInput.trim());
+      setProyecto(actualizado);
+      setUrlGuardada(true);
+      setTimeout(() => setUrlGuardada(false), 3000);
+    } catch (e) {
+      const err = e as ApiErrorResponse;
+      setErrorApi(err.error?.message ?? 'Error al guardar la URL.');
+    } finally {
+      setGuardandoUrl(false);
     }
   }
 
@@ -167,14 +199,48 @@ export default function MiPropuesta() {
           )}
 
           {propuesta.estado === 'APROBADO' && (
-            <div className="mb-5 p-3.5 rounded-lg bg-green-50 border border-green-200">
-              <div className="flex items-center gap-2">
-                <svg className="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
-                <p className="text-sm font-semibold text-green-700">Propuesta aprobada</p>
+            <>
+              <div className="mb-5 p-3.5 rounded-lg bg-green-50 border border-green-200">
+                <div className="flex items-center gap-2">
+                  <svg className="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <p className="text-sm font-semibold text-green-700">Propuesta aprobada · Proyecto en desarrollo</p>
+                </div>
               </div>
-            </div>
+
+              {/* URL del repositorio — solo si el proyecto está EN_DESARROLLO */}
+              {proyecto && proyecto.estado === 'EN_DESARROLLO' && (
+                <div className="mb-5 p-4 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0]">
+                  <p className="text-sm font-semibold text-[#0F172A] mb-1">URL del repositorio</p>
+                  <p className="text-xs text-[#64748B] mb-3">
+                    Registra el enlace de tu repositorio (opcional). Puedes actualizarlo mientras el proyecto esté en desarrollo.
+                  </p>
+                  {errorApi && (
+                    <div className="mb-3 p-2.5 rounded-lg bg-red-50 border border-red-200 text-xs text-red-600">{errorApi}</div>
+                  )}
+                  {urlGuardada && (
+                    <div className="mb-3 p-2.5 rounded-lg bg-green-50 border border-green-200 text-xs text-green-700">URL guardada correctamente.</div>
+                  )}
+                  <div className="flex gap-2">
+                    <input
+                      type="url"
+                      value={urlInput}
+                      onChange={(e) => setUrlInput(e.target.value)}
+                      placeholder="https://github.com/tu-usuario/tu-repo"
+                      className="flex-1 px-3 py-2 rounded-lg border border-[#CBD5E1] text-sm placeholder-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent"
+                    />
+                    <button
+                      onClick={onGuardarUrl}
+                      disabled={guardandoUrl || !urlInput.trim()}
+                      className="px-4 py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-sm font-semibold rounded-lg transition disabled:opacity-50"
+                    >
+                      {guardandoUrl ? 'Guardando...' : 'Guardar'}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
 
           {/* Tags */}
