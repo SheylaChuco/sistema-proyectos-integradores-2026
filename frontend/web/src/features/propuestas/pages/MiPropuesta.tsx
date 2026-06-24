@@ -200,14 +200,59 @@ export default function MiPropuesta() {
 
           {propuesta.estado === 'APROBADO' && (
             <>
-              <div className="mb-5 p-3.5 rounded-lg bg-green-50 border border-green-200">
-                <div className="flex items-center gap-2">
-                  <svg className="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
-                  <p className="text-sm font-semibold text-green-700">Propuesta aprobada · Proyecto en desarrollo</p>
+              {/* EN_DESARROLLO — propuesta aprobada, proyecto en curso */}
+              {(!proyecto || proyecto.estado === 'EN_DESARROLLO') && (
+                <div className="mb-5 p-3.5 rounded-lg bg-green-50 border border-green-200">
+                  <div className="flex items-center gap-2">
+                    <svg className="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <p className="text-sm font-semibold text-green-700">Propuesta aprobada · Proyecto en desarrollo</p>
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {/* SUSTENTACIÓN APROBADA */}
+              {proyecto?.estado === 'APROBADO' && (
+                <div className="mb-5 p-4 rounded-lg bg-green-50 border border-green-300">
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className="w-7 h-7 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
+                      <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <p className="text-base font-bold text-green-700">¡Sustentación aprobada!</p>
+                  </div>
+                  <p className="text-xs text-green-600 ml-9">Tu proyecto superó la evaluación final exitosamente.</p>
+                  {proyecto.comentario_evaluacion && (
+                    <div className="mt-3 ml-9 p-3 bg-white rounded-lg border border-green-200">
+                      <p className="text-xs font-semibold text-[#64748B] mb-1">Comentario del evaluador</p>
+                      <p className="text-sm text-[#374151]">{proyecto.comentario_evaluacion}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* SUSTENTACIÓN NO APROBADA */}
+              {proyecto?.estado === 'NO_APROBADO' && (
+                <div className="mb-5 p-4 rounded-lg bg-red-50 border border-red-300">
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className="w-7 h-7 rounded-full bg-red-500 flex items-center justify-center flex-shrink-0">
+                      <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </div>
+                    <p className="text-base font-bold text-red-700">Sustentación no aprobada</p>
+                  </div>
+                  <p className="text-xs text-red-600 ml-9">El ciclo ha cerrado para tu grupo en este periodo.</p>
+                  {proyecto.comentario_evaluacion && (
+                    <div className="mt-3 ml-9 p-3 bg-white rounded-lg border border-red-200">
+                      <p className="text-xs font-semibold text-[#64748B] mb-1">Comentario del evaluador</p>
+                      <p className="text-sm text-[#374151]">{proyecto.comentario_evaluacion}</p>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* URL del repositorio — solo si el proyecto está EN_DESARROLLO */}
               {proyecto && proyecto.estado === 'EN_DESARROLLO' && (

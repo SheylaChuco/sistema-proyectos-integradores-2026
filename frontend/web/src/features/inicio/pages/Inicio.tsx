@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import { listarProyectos } from '../../catalogo/services/catalogoService';
 import { obtenerMiGrupo, type GrupoDto } from '../../grupos/services/grupoService';
-import { obtenerMiPropuesta } from '../../propuestas/services/propuestaService';
-import type { ProyectoLista } from '../../../shared/types/proyecto.types';
+import { obtenerMiPropuesta, obtenerMiProyecto } from '../../propuestas/services/propuestaService';
+import type { ProyectoLista, ProyectoDetalle } from '../../../shared/types/proyecto.types';
 import type { PropuestaDto } from '../../../shared/types/propuesta.types';
 
 const DIAS  = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
@@ -31,12 +31,25 @@ const ESTADO_PROPUESTA: Record<string, InfoPropuesta> = {
     colorDot: 'bg-orange-400',
   },
   APROBADO: {
-    texto: '¡Propuesta aprobada!',
+    texto: 'Proyecto en desarrollo',
+    colorTexto: 'text-[#2563EB]',
+    colorDot: 'bg-blue-400',
+  },
+};
+
+const ESTADO_PROYECTO: Record<string, InfoPropuesta> = {
+  EN_DESARROLLO: {
+    texto: 'Proyecto en desarrollo',
+    colorTexto: 'text-[#2563EB]',
+    colorDot: 'bg-blue-400',
+  },
+  APROBADO: {
+    texto: '¡Sustentación aprobada!',
     colorTexto: 'text-green-600',
     colorDot: 'bg-green-500',
   },
   NO_APROBADO: {
-    texto: 'Propuesta no aprobada',
+    texto: 'Sustentación no aprobada',
     colorTexto: 'text-red-600',
     colorDot: 'bg-red-400',
   },
@@ -77,6 +90,7 @@ export default function Inicio() {
   const { usuario } = useAuth();
   const [grupo, setGrupo] = useState<GrupoDto | null | undefined>(undefined);
   const [propuesta, setPropuesta] = useState<PropuestaDto | null | undefined>(undefined);
+  const [proyecto, setProyecto] = useState<ProyectoDetalle | null>(null);
   const [recientes, setRecientes] = useState<ProyectoLista[]>([]);
 
   const primerNombre = usuario?.nombre?.split(' ')[0] ?? '';
@@ -94,7 +108,13 @@ export default function Inicio() {
       // Solo buscar propuesta si hay grupo
       if (g) {
         obtenerMiPropuesta()
-          .then(setPropuesta)
+          .then((p) => {
+            setPropuesta(p);
+            // Si la propuesta está aprobada, también traemos el estado del proyecto
+            if (p?.estado === 'APROBADO') {
+              obtenerMiProyecto().then(setProyecto).catch(() => {});
+            }
+          })
           .catch(() => setPropuesta(null));
       } else {
         setPropuesta(null);
@@ -109,9 +129,11 @@ export default function Inicio() {
     : { texto: 'Sin grupo registrado', link: '/mi-grupo', linkTexto: 'Registrar grupo' };
 
   const infoPropuesta = !grupo
-    ? { texto: 'Necesitas un grupo primero', colorTexto: 'text-[#94A3B8]', link: '/mi-grupo', linkTexto: 'Registrar grupo' }
+    ? { texto: 'Necesitas un grupo primero', colorTexto: 'text-[#94A3B8]', colorDot: '', link: '/mi-grupo', linkTexto: 'Registrar grupo' }
     : !propuesta
-    ? { texto: 'Sin propuesta activa', colorTexto: 'text-[#0F172A]', link: '/mi-propuesta', linkTexto: 'Ver propuesta' }
+    ? { texto: 'Sin propuesta activa', colorTexto: 'text-[#0F172A]', colorDot: '', link: '/mi-propuesta', linkTexto: 'Ver propuesta' }
+    : propuesta.estado === 'APROBADO' && proyecto
+    ? { ...ESTADO_PROYECTO[proyecto.estado] ?? ESTADO_PROYECTO['EN_DESARROLLO'], link: '/mi-propuesta', linkTexto: 'Ver proyecto' }
     : { ...ESTADO_PROPUESTA[propuesta.estado] ?? { texto: propuesta.estado, colorTexto: 'text-[#0F172A]', colorDot: '' }, link: '/mi-propuesta', linkTexto: 'Ver propuesta' };
 
   // ── Esqueleto de carga ─────────────────────────────────────────────────────
@@ -163,12 +185,14 @@ export default function Inicio() {
 
             {/* ── MI PROPUESTA ── */}
             <div className={`bg-white rounded-xl p-5 flex items-start justify-between border shadow-sm transition ${
-              propuesta?.estado === 'OBSERVADO'
+              proyecto?.estado === 'APROBADO'
+                ? 'border-green-200'
+                : proyecto?.estado === 'NO_APROBADO'
+                ? 'border-red-200'
+                : propuesta?.estado === 'OBSERVADO'
                 ? 'border-orange-200'
                 : propuesta?.estado === 'APROBADO'
-                ? 'border-green-200'
-                : propuesta?.estado === 'NO_APROBADO'
-                ? 'border-red-200'
+                ? 'border-blue-200'
                 : 'border-[#E2E8F0]'
             }`}>
               <div>
@@ -192,7 +216,7 @@ export default function Inicio() {
                   </svg>
                 </Link>
               </div>
-              <IconoPropuesta estado={propuesta?.estado} />
+              <IconoPropuesta estado={proyecto?.estado ?? propuesta?.estado} />
             </div>
           </>
         )}
