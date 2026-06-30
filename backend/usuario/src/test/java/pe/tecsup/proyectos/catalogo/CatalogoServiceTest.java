@@ -13,8 +13,10 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import pe.tecsup.proyectos.catalogo.dto.ProyectoDetalleDto;
 import pe.tecsup.proyectos.catalogo.dto.ProyectoListaDto;
+import pe.tecsup.proyectos.auth.repository.EstudianteRepository;
 import pe.tecsup.proyectos.catalogo.repository.ProyectoRepository;
 import pe.tecsup.proyectos.catalogo.service.CatalogoService;
+import pe.tecsup.proyectos.grupo.repository.GrupoIntegranteRepository;
 import pe.tecsup.proyectos.shared.entity.Grupo;
 import pe.tecsup.proyectos.shared.entity.Proyecto;
 import pe.tecsup.proyectos.shared.exception.ApiException;
@@ -33,6 +35,10 @@ class CatalogoServiceTest {
 
     @Mock
     private ProyectoRepository proyectoRepository;
+    @Mock
+    private EstudianteRepository estudianteRepository;
+    @Mock
+    private GrupoIntegranteRepository grupoIntegranteRepository;
 
     @InjectMocks
     private CatalogoService cataloService;
@@ -43,7 +49,7 @@ class CatalogoServiceTest {
         Page<Proyecto> pageMock = new PageImpl<>(List.of(p), PageRequest.of(0, 20), 1);
         when(proyectoRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(pageMock);
 
-        PaginaDto<ProyectoListaDto> result = cataloService.listarProyectos(null, null, null, 0);
+        PaginaDto<ProyectoListaDto> result = cataloService.listarProyectos(null, null, null, 0, 20);
 
         assertNotNull(result);
         assertEquals(1, result.getContent().size());
@@ -58,7 +64,7 @@ class CatalogoServiceTest {
         Page<Proyecto> pageMock = new PageImpl<>(List.of(p), PageRequest.of(0, 20), 1);
         when(proyectoRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(pageMock);
 
-        PaginaDto<ProyectoListaDto> result = cataloService.listarProyectos(null, null, null, 0);
+        PaginaDto<ProyectoListaDto> result = cataloService.listarProyectos(null, null, null, 0, 20);
 
         ProyectoListaDto dto = result.getContent().get(0);
         assertEquals("HISTORICO", dto.getOrigen());
@@ -71,7 +77,7 @@ class CatalogoServiceTest {
         Page<Proyecto> pageMock = new PageImpl<>(List.of(p), PageRequest.of(0, 20), 1);
         when(proyectoRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(pageMock);
 
-        PaginaDto<ProyectoListaDto> result = cataloService.listarProyectos(null, null, null, 0);
+        PaginaDto<ProyectoListaDto> result = cataloService.listarProyectos(null, null, null, 0, 20);
 
         ProyectoListaDto dto = result.getContent().get(0);
         assertEquals("NUEVO", dto.getOrigen());

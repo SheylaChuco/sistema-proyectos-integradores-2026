@@ -42,6 +42,7 @@ class GrupoServiceTest {
     void buscarEstudiantes_conNombre_retornaCoincidencias() {
         Estudiante e = buildEstudiante(1L, "Ana Torres", "2024001");
         when(estudianteRepository.buscarPorNombre("Ana")).thenReturn(List.of(e));
+        when(grupoIntegranteRepository.existsByEstudianteIdAndGrupoPeriodo(anyLong(), anyString())).thenReturn(false);
 
         List<BuscarEstudianteDto> result = grupoService.buscarEstudiantes("Ana");
 
@@ -54,45 +55,29 @@ class GrupoServiceTest {
     void crearGrupo_exitoso_creaGrupoConIntegrantes() {
         Estudiante creador = buildEstudiante(1L, "Maria Lopez", "2024001");
         Estudiante companero = buildEstudiante(2L, "Juan Perez", "2024002");
-        Grupo grupoGuardado = buildGrupo(10L, "G-01", "2026-I");
+        Grupo grupoGuardado = buildGrupo(10L, "GRP-ABC123");
 
         when(estudianteRepository.findByUsuarioId(100L)).thenReturn(Optional.of(creador));
-        when(grupoRepository.existsByCodigoGrupo("G-01")).thenReturn(false);
         when(estudianteRepository.findById(2L)).thenReturn(Optional.of(companero));
         when(grupoIntegranteRepository.existsByEstudianteIdAndGrupoPeriodo(anyLong(), anyString())).thenReturn(false);
         when(grupoRepository.save(any())).thenReturn(grupoGuardado);
         when(grupoIntegranteRepository.saveAll(any())).thenReturn(List.of());
 
-        CrearGrupoRequest request = buildRequest("G-01", "2026-I", List.of(2L));
-        GrupoResponse response = grupoService.crearGrupo(100L, request);
+        GrupoResponse response = grupoService.crearGrupo(100L, buildRequest(List.of(2L)));
 
         assertNotNull(response);
-        assertEquals("G-01", response.getCodigoGrupo());
+        assertNotNull(response.getCodigoGrupo());
         assertEquals(2, response.getIntegrantes().size());
-    }
-
-    @Test
-    void crearGrupo_codigoGrupoDuplicado_lanzaConflicto() {
-        Estudiante creador = buildEstudiante(1L, "Maria Lopez", "2024001");
-        when(estudianteRepository.findByUsuarioId(100L)).thenReturn(Optional.of(creador));
-        when(grupoRepository.existsByCodigoGrupo("G-01")).thenReturn(true);
-
-        CrearGrupoRequest request = buildRequest("G-01", "2026-I", List.of());
-        ApiException ex = assertThrows(ApiException.class, () -> grupoService.crearGrupo(100L, request));
-
-        assertEquals("CODIGO_GRUPO_DUPLICADO", ex.getCode());
-        assertEquals(HttpStatus.CONFLICT, ex.getStatus());
     }
 
     @Test
     void crearGrupo_companeroInexistente_lanzaNoEncontrado() {
         Estudiante creador = buildEstudiante(1L, "Maria Lopez", "2024001");
         when(estudianteRepository.findByUsuarioId(100L)).thenReturn(Optional.of(creador));
-        when(grupoRepository.existsByCodigoGrupo("G-01")).thenReturn(false);
         when(estudianteRepository.findById(99L)).thenReturn(Optional.empty());
 
-        CrearGrupoRequest request = buildRequest("G-01", "2026-I", List.of(99L));
-        ApiException ex = assertThrows(ApiException.class, () -> grupoService.crearGrupo(100L, request));
+        ApiException ex = assertThrows(ApiException.class,
+                () -> grupoService.crearGrupo(100L, buildRequest(List.of(99L))));
 
         assertEquals("NO_ENCONTRADO", ex.getCode());
         assertEquals(HttpStatus.NOT_FOUND, ex.getStatus());
@@ -102,11 +87,10 @@ class GrupoServiceTest {
     void crearGrupo_creadorYaTieneGrupo_lanzaEstudianteYaTieneGrupo() {
         Estudiante creador = buildEstudiante(1L, "Maria Lopez", "2024001");
         when(estudianteRepository.findByUsuarioId(100L)).thenReturn(Optional.of(creador));
-        when(grupoRepository.existsByCodigoGrupo("G-01")).thenReturn(false);
-        when(grupoIntegranteRepository.existsByEstudianteIdAndGrupoPeriodo(1L, "2026-I")).thenReturn(true);
+        when(grupoIntegranteRepository.existsByEstudianteIdAndGrupoPeriodo(eq(1L), anyString())).thenReturn(true);
 
-        CrearGrupoRequest request = buildRequest("G-01", "2026-I", List.of());
-        ApiException ex = assertThrows(ApiException.class, () -> grupoService.crearGrupo(100L, request));
+        ApiException ex = assertThrows(ApiException.class,
+                () -> grupoService.crearGrupo(100L, buildRequest(List.of())));
 
         assertEquals("ESTUDIANTE_YA_TIENE_GRUPO", ex.getCode());
         assertEquals(HttpStatus.CONFLICT, ex.getStatus());
@@ -117,13 +101,12 @@ class GrupoServiceTest {
         Estudiante creador = buildEstudiante(1L, "Maria Lopez", "2024001");
         Estudiante companero = buildEstudiante(2L, "Juan Perez", "2024002");
         when(estudianteRepository.findByUsuarioId(100L)).thenReturn(Optional.of(creador));
-        when(grupoRepository.existsByCodigoGrupo("G-01")).thenReturn(false);
         when(estudianteRepository.findById(2L)).thenReturn(Optional.of(companero));
-        when(grupoIntegranteRepository.existsByEstudianteIdAndGrupoPeriodo(1L, "2026-I")).thenReturn(false);
-        when(grupoIntegranteRepository.existsByEstudianteIdAndGrupoPeriodo(2L, "2026-I")).thenReturn(true);
+        when(grupoIntegranteRepository.existsByEstudianteIdAndGrupoPeriodo(eq(1L), anyString())).thenReturn(false);
+        when(grupoIntegranteRepository.existsByEstudianteIdAndGrupoPeriodo(eq(2L), anyString())).thenReturn(true);
 
-        CrearGrupoRequest request = buildRequest("G-01", "2026-I", List.of(2L));
-        ApiException ex = assertThrows(ApiException.class, () -> grupoService.crearGrupo(100L, request));
+        ApiException ex = assertThrows(ApiException.class,
+                () -> grupoService.crearGrupo(100L, buildRequest(List.of(2L))));
 
         assertEquals("ESTUDIANTE_YA_TIENE_GRUPO", ex.getCode());
         assertEquals(HttpStatus.CONFLICT, ex.getStatus());
@@ -141,19 +124,17 @@ class GrupoServiceTest {
         return e;
     }
 
-    private Grupo buildGrupo(Long id, String codigo, String periodo) {
+    private Grupo buildGrupo(Long id, String codigo) {
         Grupo g = new Grupo();
         g.setId(id);
         g.setCodigoGrupo(codigo);
-        g.setPeriodo(periodo);
+        g.setPeriodo("2026-I");
         return g;
     }
 
-    private CrearGrupoRequest buildRequest(String codigo, String periodo, List<Long> companeroIds) {
+    private CrearGrupoRequest buildRequest(List<Long> integranteIds) {
         CrearGrupoRequest r = new CrearGrupoRequest();
-        r.setCodigoGrupo(codigo);
-        r.setPeriodo(periodo);
-        r.setCompaneroIds(companeroIds);
+        r.setIntegranteIds(integranteIds);
         return r;
     }
 }
